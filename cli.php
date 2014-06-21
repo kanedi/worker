@@ -38,13 +38,13 @@ $di->set('db', function() use ($config) {
 $di->set('view', function() use ($config) {
     $view = new View();
 
-    $view->setViewsDir($config->application->viewsDir);
+    $view->setViewsDir(APPLICATION_PATH . '/views');
 
     $view->registerEngines(array(
         '.volt' => function($view, $di) use ($config) {
                 $volt = new VoltEngine($view, $di);
                 $volt->setOptions(array(
-                    'compiledPath' => $config->application->cacheDir,
+                    'compiledPath' => APPLICATION_PATH . '/cache',
                     'compiledSeparator' => '_'
                 ));
                 return $volt;
@@ -63,6 +63,8 @@ $loader->registerDirs(
     array(
         APPLICATION_PATH . '/tasks',
         APPLICATION_PATH . '/library',
+        APPLICATION_PATH . '/models',
+        APPLICATION_PATH . '/views',
     )
 );
 

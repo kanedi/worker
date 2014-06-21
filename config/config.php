@@ -18,4 +18,7 @@ return new \Phalcon\Config(array(
         'publicUrl'      => '127.0.0.1/sendmail',
 	),
     'mail' => $emailConf,
+    'rabbitmq' => $localConfig['rabbitmq'],
+    'path_doc' => '/var/www/html/worker/doc/',
 ));
+

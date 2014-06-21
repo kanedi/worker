@@ -10,12 +10,13 @@ class MainTask extends \Phalcon\CLI\Task
     }
 
 	public function amqAction(){
-		$connection = new AMQPConnection('192.168.56.101', 5672, 'martin', 'martinadi');
+	    global $config;
+		$connection = new AMQPConnection($config->rabbitmq->host, $config->rabbitmq->port, $config->rabbitmq->username, $config->rabbitmq->password);
 		$channel = $connection->channel();
 
-		$channel->queue_declare('hello', false, false, false, false);
+		$channel->queue_declare('donation', false, true, false, false);
 
-		$msg = new AMQPMessage(time() . ' Hello World!');
+		$msg = new AMQPMessage();
 		$channel->basic_publish($msg, '', 'hello');
 
 		echo " [x] Sent 'Hello World!'\n";
@@ -24,10 +25,11 @@ class MainTask extends \Phalcon\CLI\Task
 	}
 	
 	public function receiverAction(){
-		$connection = new AMQPConnection('localhost', 5672, 'guest', 'guest');
+	    global $config;
+		$connection = new AMQPConnection($config->rabbitmq->host, $config->rabbitmq->port, $config->rabbitmq->username, $config->rabbitmq->password);
 		$channel = $connection->channel();
 
-		$channel->queue_declare('hello', false, false, false, false);
+		$channel->queue_declare('donation_entry', false, true, false, false);
 
 		echo ' [*] Waiting for messages. To exit press CTRL+C', "\n";
 		
