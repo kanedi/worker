@@ -10,17 +10,17 @@ class DonationTask extends \Phalcon\CLI\Task
         echo "\nThis is the default task and the default action \n";
     }
 
-    public function simAction(){
+    public function simAction($params){
         global $config;
         $connection = new AMQPConnection($config->rabbitmq->host, $config->rabbitmq->port, $config->rabbitmq->username, $config->rabbitmq->password, $config->rabbitmq->vhost);
         $channel = $connection->channel();
 
         $channel->queue_declare('donation_entry', false, true, false, false);
 
-        $msg = new AMQPMessage('1164');
+        $msg = new AMQPMessage($params);
         $channel->basic_publish($msg, '', 'donation_entry');
 
-        echo " [x] Sent '1164'\n";
+        echo " [x] Sent '".$params."'\n";
         $channel->close();
         $connection->close();
     }
@@ -56,7 +56,7 @@ class DonationTask extends \Phalcon\CLI\Task
         $this->sendEmail($msg->body);
         echo "OK\tSending SMS:";
         $this->sendSms($msg->body);
-        echo "OK\n";
+        echo "\n";
     }
 
     public function sendEmail($header_id)
