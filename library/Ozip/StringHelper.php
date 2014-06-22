@@ -15,6 +15,11 @@ class StringHelper {
     public $angka = array(1000000000,1000000,1000,100,10,1);
     public $satuan = array('milyar','juta','ribu','ratus','puluh',''); 
 
+    public static function numberToWord($number){
+        $terbilang = new StringHelper();
+        return $terbilang->eja($number);
+    }
+
     public function eja($n) { 
         $str = '';
         $i=0; 
@@ -32,7 +37,12 @@ class StringHelper {
         $str = preg_replace("/satu puluh (\w+)/i","\\1 belas",$str); 
         $str = preg_replace("/satu (ribu|ratus|puluh|belas)/i","se\\1",$str); 
         return strtoupper($str); 
-    } 
+    }
+
+    public static function formatNumber($number){
+        return number_format(doubleval($number),0,',','.');
+    }
+
     public function test(){
         echo "Test";
     }

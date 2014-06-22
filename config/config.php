@@ -19,6 +19,6 @@ return new \Phalcon\Config(array(
 	),
     'mail' => $emailConf,
     'rabbitmq' => $localConfig['rabbitmq'],
-    'path_doc' => '/var/www/html/worker/doc/',
+    'path_doc' => '/tmp/',
 ));
 

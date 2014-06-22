@@ -47,6 +47,23 @@ $di->set('view', function() use ($config) {
                     'compiledPath' => APPLICATION_PATH . '/cache',
                     'compiledSeparator' => '_'
                 ));
+
+                $volt->getCompiler()->addFunction(
+                    'numberToWord',
+                    function($number)
+                    {
+                        return "Library\\Ozip\\StringHelper::numberToWord({$number})";
+                    }
+                );
+
+                $volt->getCompiler()->addFunction(
+                    'formatNumber',
+                    function($number)
+                    {
+                        return "Library\\Ozip\\StringHelper::formatNumber({$number})";
+                    }
+                );
+
                 return $volt;
             },
         '.phtml' => 'Phalcon\Mvc\View\Engine\Php'
