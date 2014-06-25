@@ -66,49 +66,54 @@ class DonationTask extends \Phalcon\CLI\Task
         global $config;
 
         $header = CrDonationHeader::findFirst($header_id);
-        $detail = CrDonationDetail::find('cr_donation_header_id = ' . $header_id);
-        $gt = 0;
-        $date = date_create($header->trx_date);
-        $ddd = date_format($date, 'd F Y');
+        if($header){
+            $detail = CrDonationDetail::find('cr_donation_header_id = ' . $header_id);
+            $gt = 0;
+            $date = date_create($header->trx_date);
+            $ddd = date_format($date, 'd F Y');
 
-        $fn = 'donation_' . $header->id . '.pdf';
+            $fn = 'donation_' . $header->id . '.pdf';
 
-        $this->kwitansi($header_id);
+            $this->kwitansi($header_id);
 
-        $attach = array(
-            'data' => $config->path_doc . $fn,
-            'filename' => $fn
-        );
+            $attach = array(
+                'data' => $config->path_doc . $fn,
+                'filename' => $fn
+            );
 
-        foreach ($detail as $dd) {
-            $gt = $gt + $dd->amount;
-        }
-        setlocale(LC_MONETARY, 'id_ID');
-        $gt = money_format('%(#10n', $gt);
-        if ($header->CrDonor->email != '' || $header->CrDonor->email != null) {
-            $validation = new Phalcon\Validation();
-
-            $validation->add('email', new Email(array(
-                'message' => 'invalid email format'
-            )));
-
-            $messages = $validation->validate(array('email' => $email));
-            if (count($messages)) {
-                foreach ($messages as $message) {
-                    echo $message . " DonorID:" . $header->CrDonor;
-                }
-            }else{
-                $mail = new Mail();
-                $mail->send(
-                    array(strtolower($header->CrDonor->email)),
-                    "Dompet Dhuafa Donation",
-                    "donationentry",
-                    array("header" => $header, "detail" => $detail, 'grandtotal' => $gt, 'date' => $ddd),
-                    $attach
-                );
+            foreach ($detail as $dd) {
+                $gt = $gt + $dd->amount;
             }
+            setlocale(LC_MONETARY, 'id_ID');
+            $gt = money_format('%(#10n', $gt);
+            if ($header->CrDonor->email != '' || $header->CrDonor->email != null) {
+                $validation = new Phalcon\Validation();
+
+                $validation->add('email', new Email(array(
+                    'message' => 'invalid email format'
+                )));
+
+                $messages = $validation->validate(array('email' => $email));
+                if (count($messages)) {
+                    foreach ($messages as $message) {
+                        echo $message . " DonorID:" . $header->CrDonor;
+                    }
+                }else{
+                    $mail = new Mail();
+                    $mail->send(
+                        array(strtolower($header->CrDonor->email)),
+                        "Dompet Dhuafa Donation",
+                        "donationentry",
+                        array("header" => $header, "detail" => $detail, 'grandtotal' => $gt, 'date' => $ddd),
+                        $attach
+                    );
+                }
+            }
+            unlink($config->path_doc . $fn);
+        }else{
+            echo "No Donation Found";
         }
-        unlink($config->path_doc . $fn);
+
     }
 
     public function sendSms($header_id)
