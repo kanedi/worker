@@ -109,7 +109,8 @@ class DonationTask extends \Phalcon\CLI\Task
         $pesan = 'Yang Terhormat ' . $header->CrDonor->name . ', Donasi anda senilai' . $gt . ' sudah kami terima, semoga diberikan keberkahan atas harta yang tersisa';
         $pesan = base64_encode($pesan);
         $no = $header->CrDonor->hp;
-        $kd_cabang = 1;
+        //$kd_cabang = 1;	
+	$kd_cabang = $header->User->HcEmployee->MsDepartment->MsDirectorate->ms_branch_id;
         if ($no != '' || $no != null) {
             $ch = curl_init();
 
