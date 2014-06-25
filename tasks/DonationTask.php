@@ -56,64 +56,68 @@ class DonationTask extends \Phalcon\CLI\Task
     {
         echo date("Y-m-d H:i:s") ."\t".$msg->body."\tSending Email:";
         $this->sendEmail($msg->body);
-        echo "\tSending SMS:";
+        echo ",\tSending SMS:";
         $this->sendSms($msg->body);
         echo "\n";
     }
 
     public function sendEmail($header_id)
     {
-        global $config;
+        try{
+            global $config;
+            $header = CrDonationHeader::findFirst($header_id);
+            if($header){
+                $detail = CrDonationDetail::find('cr_donation_header_id = ' . $header_id);
+                $gt = 0;
+                $date = date_create($header->trx_date);
+                $ddd = date_format($date, 'd F Y');
 
-        $header = CrDonationHeader::findFirst($header_id);
-        if($header){
-            $detail = CrDonationDetail::find('cr_donation_header_id = ' . $header_id);
-            $gt = 0;
-            $date = date_create($header->trx_date);
-            $ddd = date_format($date, 'd F Y');
+                $fn = 'donation_' . $header->id . '.pdf';
 
-            $fn = 'donation_' . $header->id . '.pdf';
+                $this->kwitansi($header_id);
 
-            $this->kwitansi($header_id);
+                $attach = array(
+                    'data' => $config->path_doc . $fn,
+                    'filename' => $fn
+                );
 
-            $attach = array(
-                'data' => $config->path_doc . $fn,
-                'filename' => $fn
-            );
-
-            foreach ($detail as $dd) {
-                $gt = $gt + $dd->amount;
-            }
-            setlocale(LC_MONETARY, 'id_ID');
-            $gt = money_format('%(#10n', $gt);
-            if ($header->CrDonor->email != '' || $header->CrDonor->email != null) {
-                $validation = new Phalcon\Validation();
-
-                $validation->add('email', new Email(array(
-                    'message' => 'invalid email format'
-                )));
-
-                $messages = $validation->validate(array('email' => $email));
-                if (count($messages)) {
-                    foreach ($messages as $message) {
-                        echo $message . " DonorID:" . $header->CrDonor;
-                    }
-                }else{
-                    $mail = new Mail();
-                    $mail->send(
-                        array(strtolower($header->CrDonor->email)),
-                        "Dompet Dhuafa Donation",
-                        "donationentry",
-                        array("header" => $header, "detail" => $detail, 'grandtotal' => $gt, 'date' => $ddd),
-                        $attach
-                    );
+                foreach ($detail as $dd) {
+                    $gt = $gt + $dd->amount;
                 }
-            }
-            unlink($config->path_doc . $fn);
-        }else{
-            echo "No Donation Found";
-        }
+                setlocale(LC_MONETARY, 'id_ID');
+                $gt = money_format('%(#10n', $gt);
+                if ($header->CrDonor->email != '' || $header->CrDonor->email != null) {
+                    $validation = new Phalcon\Validation();
 
+                    $validation->add('email', new Email(array(
+                        'message' => 'invalid email format'
+                    )));
+
+                    $messages = $validation->validate(array('email' => $email));
+                    if (count($messages)) {
+                        foreach ($messages as $message) {
+                            echo $message . " DonorID:" . $header->CrDonor;
+                        }
+                    }else{
+                        $mail = new Mail();
+                        $mail->send(
+                            array(strtolower($header->CrDonor->email)),
+                            "Dompet Dhuafa Donation",
+                            "donationentry",
+                            array("header" => $header, "detail" => $detail, 'grandtotal' => $gt, 'date' => $ddd),
+                            $attach
+                        );
+                    }
+                }
+                unlink($config->path_doc . $fn);
+            }else{
+                echo "No Donation Found";
+            }
+        }catch (PDOException $e){
+            echo $e->getMessage();
+        }catch(Exception $e){
+            echo $e->getMessage();
+        }
     }
 
     public function sendSms($header_id)
