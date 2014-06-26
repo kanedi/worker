@@ -71,19 +71,19 @@ class CrDonor extends \Phalcon\Mvc\Model
      */
     public function validation()
     {
-        if($this->email!=null){
-            $this->validate(
-                new Email(
-                    array(
-                        "field"    => "email",
-                        //"required" => false,
-                    )
-                )
-            );
-            if ($this->validationHasFailed() == true) {           
-                return false;
-            }
-        }        
+        //if($this->email!=null){
+        //    $this->validate(
+        //        new Email(
+        //            array(
+        //                "field"    => "email",
+        //                //"required" => false,
+        //            )
+        //        )
+        //    );
+        //    if ($this->validationHasFailed() == true) {           
+        //        return false;
+        //    }
+        //}        
     }
 
 }
