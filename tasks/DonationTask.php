@@ -93,7 +93,7 @@ class DonationTask extends \Phalcon\CLI\Task
                         'message' => 'invalid email format'
                     )));
 
-                    $messages = $validation->validate(array('email' => $email));
+                    $messages = $validation->validate(array('email' => $header->CrDonor->email));
                     if (count($messages)) {
                         foreach ($messages as $message) {
                             echo $message . " DonorID:" . $header->CrDonor;
