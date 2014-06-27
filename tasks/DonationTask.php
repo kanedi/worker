@@ -93,10 +93,10 @@ class DonationTask extends \Phalcon\CLI\Task
                         'message' => 'invalid email format'
                     )));
 
-                    $messages = $validation->validate(array('email' => $email));
+                    $messages = $validation->validate(array('email' => $header->CrDonor->email));
                     if (count($messages)) {
                         foreach ($messages as $message) {
-                            echo $message . " DonorID:" . $header->CrDonor;
+                            echo $message . " DonorID:" . $header->CrDonor->email;
                         }
                     }else{
                         $mail = new Mail();
@@ -107,6 +107,7 @@ class DonationTask extends \Phalcon\CLI\Task
                             array("header" => $header, "detail" => $detail, 'grandtotal' => $gt, 'date' => $ddd),
                             $attach
                         );
+                        echo "OK";
                     }
                 }
                 unlink($config->path_doc . $fn);
