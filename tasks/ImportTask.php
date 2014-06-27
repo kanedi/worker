@@ -1,5 +1,16 @@
 <?php
-
+/**
+     *parameter branch cabang :
+     *1: pusat
+     *3: SUMSEL
+     *4: BANTEN
+     *5: JATENG
+     *6: JATIM
+     *7: KALTIM
+     *8: SINGGALANG
+     *9: MAKASAR
+     *10: JOGJAKARTA
+*/
 
 class ImportTask extends \Phalcon\CLI\Task
 {
@@ -26,59 +37,67 @@ class ImportTask extends \Phalcon\CLI\Task
                 $loop = $loop + 1;
             }
         }
-        for($i=1; $i<=$loop; $i++)
-        {
-            $row=100;
-            $pagenumber=$i;
-            $q = "  SELECT *
-                    FROM
-                    (
-                    SELECT TOP ".$row."
-                    *
-                    FROM
-                    (
-                    SELECT TOP ".$pagenumber * $row."
-                    *
-                    FROM tb_donatur ORDER BY id_donatur) AS SOD ORDER BY id_donatur DESC ) AS SOD2 ORDER BY id_donatur ASC";
-            $con = $sqlserver->connect();
-            $rs = $sqlserver->query($q);            
-            $data = array();
-            if($rs){
-                $hasil = true;
-                while ($row = mssql_fetch_array($rs)) {
-                    $data[] = $row;
-                    $genid = new Library\Ozip\Id();
-                    $seq = $genid->getSeq('donor');
-                    $donor = new CrDonor;
-                    $donor->name = $row['nama'];
-                    $donor->address = $row['alamatrumah1'];
-                    $donor->city = $row['kotarumah'];
-                    $donor->province = $row['propinsi'];
-                    $donor->hp = $row['hp'];
-                    $donor->npwp = $row['npwp'];
-                    if($row['email']!=''){
-                        $donor->email = $row['email'];
-                    }
-                    $donor->kd_cc = $row['kd_cc'];
-                    $donor->branch_origin = $branch;
-                    $donor->branch_current = $branch;
-                    $donor->is_deleted = 0;
-                    $donor->country = 'INDONESIA';
-                    $donor->public_id = $seq;
-                    $donor->created = date("Y-m-d H:i:s",strtotime($row['tanggal_input']));
-                    if($donor->save() == false){
-                        foreach ($donor->getMessages() as $message) {
-                            $errors = $message->getMessage();
-                            echo $errors;
-                            break;
-                        }
-                    }
-                }                
+        try {
+            $transactionManager = new Phalcon\Mvc\Model\Transaction\Manager();
+            $transaction = $transactionManager->get();
+            for($i=1; $i<=$loop; $i++)
+            {
+                $row=100;
+                $pagenumber=$i;
+                $q = "  SELECT *
+                        FROM
+                        (
+                        SELECT TOP ".$row."
+                        *
+                        FROM
+                        (
+                        SELECT TOP ".$pagenumber * $row."
+                        *
+                        FROM tb_donatur ORDER BY id_donatur) AS SOD ORDER BY id_donatur DESC ) AS SOD2 ORDER BY id_donatur ASC";
+                $con = $sqlserver->connect();
+                $rs = $sqlserver->query($q);            
+                $data = array();
+                if($rs){
+                    $hasil = true;                
+                    while ($row = mssql_fetch_array($rs)) {
+                       $data[] = $row;
+                       $genid = new Library\Ozip\Id();
+                       $seq = $genid->getSeq('donor');
+                       $donor = new CrDonor;
+                       $donor->setTransaction($transaction);
+                       $donor->name = $row['nama'];
+                       $donor->address = $row['alamatrumah1'];
+                       $donor->city = $row['kotarumah'];
+                       $donor->province = $row['propinsi'];
+                       $donor->hp = $row['hp'];
+                       $donor->npwp = $row['npwp'];
+                       if($row['email']!=''){
+                           $donor->email = $row['email'];
+                       }
+                       $donor->kd_cc = $row['kd_cc'];
+                       $donor->branch_origin = $branch;
+                       $donor->branch_current = $branch;
+                       $donor->is_deleted = 0;
+                       $donor->country = 'INDONESIA';
+                       $donor->public_id = $seq;
+                       $donor->created = date("Y-m-d H:i:s",strtotime($row['tanggal_input']));
+                       if($donor->save() == false){
+                            $errors = array();
+                                   foreach ($donor->getMessages() as $message) {
+                                       $transaction->rollback($message->getMessage());
+                                       break;
+                                   }
+                       }
+                   }    
+                   $sqlserver->close();
+                   $tt = $i * 100;
+                   echo "import From db: ".$db." record count ".$tt." Done"," \n ";                              
+                }           
             }                
-            $sqlserver->close();
-            $tt = $i * 100;
-            echo "import From db: ".$db." record count ".$tt." Done"," \n ";
-        }
+            $transaction->commit();
+        } catch (Phalcon\Mvc\Model\Transaction\Failed $e) {
+            echo $e->getMessage(), "\n";
+        }    
     }
     
     public function hitungAction($db){
