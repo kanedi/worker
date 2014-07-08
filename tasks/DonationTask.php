@@ -60,7 +60,7 @@ class DonationTask extends \Phalcon\CLI\Task
             'region' => $config->aws->region
         ));
 
-        $result = $client->createQueue(array('QueueName' => 'desique'));
+        $result = $client->createQueue(array('QueueName' => 'donation_entry'));
         $url = $result->get('QueueUrl');
 
         while(true) {
@@ -87,9 +87,9 @@ class DonationTask extends \Phalcon\CLI\Task
     public function sendDonationNotification($msg)
     {
         echo date("Y-m-d H:i:s") ."\t".$msg->body."\tSending Email:";
-        $this->sendEmail($msg->body);
+        $this->sendEmail($msg);
         echo ",\tSending SMS:";
-        $this->sendSms($msg->body);
+        $this->sendSms($msg);
         echo "\n";
     }
 
