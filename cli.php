@@ -6,6 +6,8 @@
  * Time: 10:27 AM
  */
 
+require __DIR__ . "/vendor/autoload.php";
+
 use Phalcon\Mvc\View,
     Phalcon\Mvc\View\Engine\Volt as VoltEngine,
     Phalcon\DI\FactoryDefault\CLI as CliDI,

@@ -27,7 +27,7 @@ class DonationTask extends \Phalcon\CLI\Task
         $connection->close();
     }
 
-    public function entryAction()
+    public function entryRMQAction()
     {
         global $config;
         $connection = new AMQPConnection($config->rabbitmq->host, $config->rabbitmq->port, $config->rabbitmq->username, $config->rabbitmq->password,$config->rabbitmq->vhost);
@@ -52,7 +52,39 @@ class DonationTask extends \Phalcon\CLI\Task
 
     }
 
-    public function callback($msg)
+    public function entryAction(){
+        global $config;
+        $client = Aws\Sqs\SqsClient::factory(array(
+            'key'    => $config->aws->key,
+            'secret' => $config->aws->secret,
+            'region' => $config->aws->region
+        ));
+
+        $result = $client->createQueue(array('QueueName' => 'desique'));
+        $url = $result->get('QueueUrl');
+
+        while(true) {
+            $res = $client->receiveMessage(array(
+                'QueueUrl'          => $url,
+                'WaitTimeSeconds'   => 10
+            ));
+
+            if ($res->getPath('Messages')) {
+
+                foreach ($res->getPath('Messages') as $msg) {
+                    $this->sendDonationNotification($msg['Body']);
+                    // Do something useful with $msg['Body'] here
+                    $res = $client->deleteMessage(array(
+                        'QueueUrl'      => $url,
+                        'ReceiptHandle' => $msg['ReceiptHandle']
+                    ));
+                }
+
+            }
+        }
+    }
+
+    public function sendDonationNotification($msg)
     {
         echo date("Y-m-d H:i:s") ."\t".$msg->body."\tSending Email:";
         $this->sendEmail($msg->body);
