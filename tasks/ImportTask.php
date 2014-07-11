@@ -43,17 +43,17 @@ class ImportTask extends \Phalcon\CLI\Task
             for($i=1; $i<=$loop; $i++)
             {
                 $row=100;
-                $pagenumber=$i;
-                $q = "  SELECT *
-                        FROM
-                        (
-                        SELECT TOP ".$row."
-                        *
-                        FROM
-                        (
-                        SELECT TOP ".$pagenumber * $row."
-                        *
-                        FROM tb_donatur ORDER BY id_donatur) AS SOD ORDER BY id_donatur DESC ) AS SOD2 ORDER BY id_donatur ASC";
+                $pagenumber=$i;               
+                $q ="
+                    SELECT *
+                    FROM (
+                    SELECT *, 
+                    ROW_NUMBER() OVER (ORDER BY id_donatur) AS RowNum
+                    FROM tb_donatur ) AS SOD
+                    WHERE SOD.RowNum BETWEEN ((".$pagenumber."-1)*".$row.")+1
+                    AND ".$row."*(".$pagenumber.")
+                
+                ";
                 $con = $sqlserver->connect();
                 $rs = $sqlserver->query($q);            
                 $data = array();
@@ -88,11 +88,12 @@ class ImportTask extends \Phalcon\CLI\Task
                                        break;
                                    }
                        }
-                   }    
-                   $sqlserver->close();
+                       echo '.';
+                   } 
                    $tt = $i * 100;
-                   echo "import From db: ".$db." record count ".$tt." Done"," \n ";                              
-                }           
+                   echo "\n import From db: ".$db." record count ".$tt." Done"," \n ";                              
+                }   
+                $sqlserver->close();           
             }                
             $transaction->commit();
         } catch (Phalcon\Mvc\Model\Transaction\Failed $e) {
