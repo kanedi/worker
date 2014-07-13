@@ -31,7 +31,7 @@ class NotificationTask extends \Phalcon\CLI\Task{
             if ($res->getPath('Messages')) {
 
                 foreach ($res->getPath('Messages') as $msg) {
-                    $this->sendNotification($msg['Body']);
+                    //$this->sendNotification($msg['Body']);
                     // Do something useful with $msg['Body'] here
                     $res = $client->deleteMessage(array(
                         'QueueUrl'      => $url,
@@ -114,17 +114,20 @@ class NotificationTask extends \Phalcon\CLI\Task{
             echo "Sending SMS: ";
             $smsResults = simplexml_load_file("https://reguler.zenziva.net/apps/smsapi.php?userkey=exvj4c&passkey=92528&nohp=".$notification->sms->to."&pesan=".urlencode($notification->sms->msg));
             $status = $smsResults->message[0]->text;
-            $balance = $smsResults->message[0]->balance;
-            echo $status;
-            if($balance <= 500){
-                $mail = new Mail();
-                $mail->send(
-                    array(strtolower("martin@dompetdhuafa.org")),
-                    "Quota SMS SISA " . $balance,
-                    "empty",
-                    array("content" => "Sisa sms tinggal " . $balance . " Segera isi ulang lagi")
-                );
+            $balance = trim($smsResults->message[0]->balance);
+            echo $status . " Balance: " . $balance;
+            if($balance != ''){
+                if($balance <= 500){
+                    $mail = new Mail();
+                    $mail->send(
+                        array(strtolower("martin@dompetdhuafa.org")),
+                        "Quota SMS SISA " . $balance,
+                        "empty",
+                        array("content" => "Sisa sms tinggal " . $balance . " Segera isi ulang lagi")
+                    );
+                }
             }
+
         }
         echo "\n";
     }
