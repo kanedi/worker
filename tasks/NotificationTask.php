@@ -31,7 +31,7 @@ class NotificationTask extends \Phalcon\CLI\Task{
             if ($res->getPath('Messages')) {
 
                 foreach ($res->getPath('Messages') as $msg) {
-                    //$this->sendNotification($msg['Body']);
+                    $this->sendNotification($msg['Body']);
                     // Do something useful with $msg['Body'] here
                     $res = $client->deleteMessage(array(
                         'QueueUrl'      => $url,
