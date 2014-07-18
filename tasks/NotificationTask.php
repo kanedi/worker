@@ -23,22 +23,27 @@ class NotificationTask extends \Phalcon\CLI\Task{
         $url = $result->get('QueueUrl');
 
         while(true) {
-            $res = $client->receiveMessage(array(
-                'QueueUrl'          => $url,
-                'WaitTimeSeconds'   => 10
-            ));
-            echo ".";
-            if ($res->getPath('Messages')) {
+            try{
+                $res = $client->receiveMessage(array(
+                    'QueueUrl'          => $url,
+                    'WaitTimeSeconds'   => 10
+                ));
+                echo ".";
+                if ($res->getPath('Messages')) {
 
-                foreach ($res->getPath('Messages') as $msg) {
-                    $this->sendNotification($msg['Body']);
-                    // Do something useful with $msg['Body'] here
-                    $res = $client->deleteMessage(array(
-                        'QueueUrl'      => $url,
-                        'ReceiptHandle' => $msg['ReceiptHandle']
-                    ));
+                    foreach ($res->getPath('Messages') as $msg) {
+                        $this->sendNotification($msg['Body']);
+                        // Do something useful with $msg['Body'] here
+                        $res = $client->deleteMessage(array(
+                            'QueueUrl'      => $url,
+                            'ReceiptHandle' => $msg['ReceiptHandle']
+                        ));
+                    }
                 }
-
+            }catch (Aws\SqsException $e1){
+                echo "\n SqsException " . $e1->getMessage() . "\n";
+            }catch(Exception $e2){
+                echo "\n Exception " . $e2->getMessage() . "\n";
             }
         }
     }
