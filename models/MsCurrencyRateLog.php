@@ -1,7 +1,7 @@
 <?php
 
 
-
+use Phalcon\Mvc\Model\Behavior\Timestampable;
 
 class MsCurrencyRateLog extends \Phalcon\Mvc\Model
 {
@@ -29,5 +29,16 @@ class MsCurrencyRateLog extends \Phalcon\Mvc\Model
      * @var string
      */
     public $created;
-     
+
+    public function initialize()
+    {
+        $this->addBehavior(new Timestampable(
+            array(
+                'beforeCreate' => array(
+                    'field' => 'created',
+                    'format' => 'Y-m-d H:i:s'
+                )
+            )
+        ));
+    }
 }

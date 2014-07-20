@@ -41,5 +41,8 @@ class UserToken extends \Phalcon\Mvc\Model
      * @var string
      */
     public $expired;
-     
+
+    public function clearLogin(){
+        $this->query('TRUNCATE table user_token;');
+    }
 }
