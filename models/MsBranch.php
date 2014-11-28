@@ -17,6 +17,12 @@ class MsBranch extends \Phalcon\Mvc\Model
      * @var integer
      */
     public $ms_company_id;
+	
+	/**
+     *
+     * @var string
+     */
+    public $code;
      
     /**
      *
@@ -70,6 +76,7 @@ class MsBranch extends \Phalcon\Mvc\Model
 		
 		if($request->get('rpt')) {
 			$data = array('id' => "sm",
+						   'code' => "",
 						   'name' => "All Branch",
 						   'country' => "",
 						   'satate' => "",
@@ -89,6 +96,30 @@ class MsBranch extends \Phalcon\Mvc\Model
 			  );
 			  
 		return $json;	  		
-	}	
+	}
+	
+	public function getDetail($token){
+		$tok = $this->extrackToken($token);
+		$return = MsBranch::detail($tok['branch_id']);
+		return $return;
+	}
+	
+	public function getDetailId($id){
+		$return = MsBranch::detail($id);
+		return $return;
+	}
+	
+	private function detail($id){
+		$branch = MsBranch::findFirst($id);
+		$return = array(
+			'id' => $branch->id,
+			'code' => $branch->code,
+			'name' => $branch->name,
+			'state' => $branch->state,
+			'type' => $branch->type,
+			'local_timezone' => $branch->local_timezone
+		);
+		return $return;
+	}
      
 }
