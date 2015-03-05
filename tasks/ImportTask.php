@@ -37,70 +37,78 @@ class ImportTask extends \Phalcon\CLI\Task
                 $loop = $loop + 1;
             }
         }
-        try {
-            $transactionManager = new Phalcon\Mvc\Model\Transaction\Manager();
-            $transaction = $transactionManager->get();
-            for($i=1; $i<=$loop; $i++){
-                $row=100;
-                $pagenumber=$i;               
-                $q ="
-                    SELECT *
-                    FROM (
-                    SELECT *, 
-                    ROW_NUMBER() OVER (ORDER BY id_donatur) AS RowNum
-                    FROM tb_donatur ) AS SOD
-                    WHERE SOD.RowNum BETWEEN ((".$pagenumber."-1)*".$row.")+1
-                    AND ".$row."*(".$pagenumber.")
-                
-                ";
-                $con = $sqlserver->connect();
-                $rs = $sqlserver->query($q);            
-                $data = array();
-                if($rs){
-                    $hasil = true;                
-                    while ($row = mssql_fetch_array($rs)) {
-                       $data[] = $row;
-                       $genid = new Library\Ozip\Id();
-                       $seq = $genid->getSeq('donor');
-                       $donor = new CrDonor;
-                       $donor->setTransaction($transaction);
-                       $donor->name = $row['nama'];
-                       $donor->address = $row['alamatrumah1'];
-                       $donor->city = $row['kotarumah'];
-                       $donor->province = $row['propinsi'];
-                       $donor->hp = $row['hp'];
-                       $donor->npwp = $row['npwp'];
-                       if($row['email']!=''){
-                           $donor->email = $row['email'];
-                       }
-                       $donor->kd_cc = $row['kd_cc'];
-                       $donor->branch_origin = $branch;
-                       $donor->branch_current = $branch;
-                       $donor->is_deleted = 0;
-                       $donor->type = "PERSONAL";
-                       $donor->country = 'INDONESIA';
-                       $donor->public_id = $seq;
-                       $donor->created = date("Y-m-d H:i:s",strtotime($row['tanggal_input']));
-                       if($donor->save() == false){
-                            $errors = array();
-                                   foreach ($donor->getMessages() as $message) {
-                                       $transaction->rollback($message->getMessage());
-                                       break;
-                                   }
-                       }
-                       echo '.';
-                   } 
-                   $tt = $i * 100;
-                   echo "\n import From db: ".$db." record count ".$tt." Done"," \n ";
-                }else{
-                    $transaction->rollback(mssql_get_last_message());    
-                }
-                $sqlserver->close();
-            }
-            $transaction->commit();    
-        } catch (Phalcon\Mvc\Model\Transaction\Failed $e) {
-            echo $e->getMessage(), "\n";
-        }              
+        function muter($inya,$loop){
+            try {
+                $sqlserver = new Library\Ozip\SqlServer();
+                $sqlserver->db=$db;
+                $transactionManager = new Phalcon\Mvc\Model\Transaction\Manager();
+                $transaction = $transactionManager->get();
+                for($i=$inya; $i<=$loop; $i++){
+                    $row=100;
+                    $pagenumber=$i;               
+                    $q ="
+                        SELECT *
+                        FROM (
+                        SELECT *, 
+                        ROW_NUMBER() OVER (ORDER BY id_donatur) AS RowNum
+                        FROM tb_donatur ) AS SOD
+                        WHERE SOD.RowNum BETWEEN ((".$pagenumber."-1)*".$row.")+1
+                        AND ".$row."*(".$pagenumber.")
+                    
+                    ";
+                    $con = $sqlserver->connect();
+                    $rs = $sqlserver->query($q);            
+                    $data = array();
+                    if($rs){
+                        $hasil = true;                
+                        while ($row = mssql_fetch_array($rs)) {
+                           $data[] = $row;
+                           $genid = new Library\Ozip\Id();
+                           $seq = $genid->getSeq('donor');
+                           $donor = new CrDonor;
+                           $donor->setTransaction($transaction);
+                           $donor->name = $row['nama'];
+                           $donor->address = $row['alamatrumah1'];
+                           $donor->city = $row['kotarumah'];
+                           $donor->province = $row['propinsi'];
+                           $donor->hp = $row['hp'];
+                           $donor->npwp = $row['npwp'];
+                           if($row['email']!=''){
+                               $donor->email = $row['email'];
+                           }
+                           $donor->kd_cc = $row['kd_cc'];
+                           $donor->branch_origin = $branch;
+                           $donor->branch_current = $branch;
+                           $donor->is_deleted = 0;
+                           $donor->type = "PERSONAL";
+                           $donor->country = 'INDONESIA';
+                           $donor->public_id = $seq;
+                           $donor->created = date("Y-m-d H:i:s",strtotime($row['tanggal_input']));
+                           if($donor->save() == false){
+                                $errors = array();
+                                       foreach ($donor->getMessages() as $message) {
+                                           $transaction->rollback($message->getMessage());
+                                           break;
+                                       }
+                           }
+                           echo '.';
+                       } 
+                       $tt = $i * 100;
+                       echo "\n import From db: ".$db." record count ".$tt." Done"," \n ";
+                    }else{
+                        //$transaction->rollback(mssql_get_last_message());
+                        $sqlserver->close();
+                        $transaction->commit();
+                        muter($i,$loop);
+                    }
+                    $sqlserver->close();
+                }    
+                $transaction->commit();    
+            } catch (Phalcon\Mvc\Model\Transaction\Failed $e) {
+                echo $e->getMessage(), "\n";
+            }    
+        }
+        muter(1,$loop);
     }
     
     public function hitungAction($db){
