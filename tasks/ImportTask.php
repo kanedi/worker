@@ -37,11 +37,10 @@ class ImportTask extends \Phalcon\CLI\Task
                 $loop = $loop + 1;
             }
         }
-        for($i=1; $i<=$loop; $i++)
-        {
-            try {
-                $transactionManager = new Phalcon\Mvc\Model\Transaction\Manager();
-                $transaction = $transactionManager->get();
+        try {
+            $transactionManager = new Phalcon\Mvc\Model\Transaction\Manager();
+            $transaction = $transactionManager->get();
+            for($i=1; $i<=$loop; $i++){
                 $row=100;
                 $pagenumber=$i;               
                 $q ="
@@ -94,12 +93,12 @@ class ImportTask extends \Phalcon\CLI\Task
                    $tt = $i * 100;
                    echo "\n import From db: ".$db." record count ".$tt." Done"," \n ";
                 }   
-                $sqlserver->close();    
-                $transaction->commit();    
-            } catch (Phalcon\Mvc\Model\Transaction\Failed $e) {
-                echo $e->getMessage(), "\n";
-            }       
-        }       
+                $sqlserver->close();
+            }
+            $transaction->commit();    
+        } catch (Phalcon\Mvc\Model\Transaction\Failed $e) {
+            echo $e->getMessage(), "\n";
+        }              
     }
     
     public function hitungAction($db){
