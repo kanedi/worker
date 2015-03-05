@@ -100,6 +100,7 @@ class ImportTask extends \Phalcon\CLI\Task
                         $sqlserver->close();
                         $transaction->commit();
                         muter($i,$loop,$db,$branch);
+                        break;
                     }
                     $sqlserver->close();
                 }    
