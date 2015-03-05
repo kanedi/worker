@@ -37,7 +37,7 @@ class ImportTask extends \Phalcon\CLI\Task
                 $loop = $loop + 1;
             }
         }
-        function muter($inya,$loop){
+        function muter($inya,$loop,$db,$branch){
             try {
                 $sqlserver = new Library\Ozip\SqlServer();
                 $sqlserver->db=$db;
@@ -99,7 +99,7 @@ class ImportTask extends \Phalcon\CLI\Task
                         //$transaction->rollback(mssql_get_last_message());
                         $sqlserver->close();
                         $transaction->commit();
-                        muter($i,$loop);
+                        muter($i,$loop,$db,$branch);
                     }
                     $sqlserver->close();
                 }    
@@ -108,7 +108,7 @@ class ImportTask extends \Phalcon\CLI\Task
                 echo $e->getMessage(), "\n";
             }    
         }
-        muter(1,$loop);
+        muter(1,$loop,$db,$branch);
     }
     
     public function hitungAction($db){
