@@ -23,6 +23,8 @@ class ImportTask extends \Phalcon\CLI\Task
     //branch = ms_branch_id di desi
     //loop = kelipatan 1000 yang ingin di loop
     public function aksiAction($db,$branch){
+        $sqlserver = new Library\Ozip\SqlServer();
+        $sqlserver->db=$db;
         $total = $this->itung($db);
         $loop = 1;
         if($total > 100){
@@ -51,8 +53,6 @@ class ImportTask extends \Phalcon\CLI\Task
                     AND ".$row."*(".$pagenumber.")
                 
                 ";
-                $sqlserver = new Library\Ozip\SqlServer();
-                $sqlserver->db=$db;
                 $con = $sqlserver->connect();
                 $rs = $sqlserver->query($q);            
                 $data = array();
