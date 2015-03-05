@@ -92,7 +92,9 @@ class ImportTask extends \Phalcon\CLI\Task
                    } 
                    $tt = $i * 100;
                    echo "\n import From db: ".$db." record count ".$tt." Done"," \n ";
-                }   
+                }else{
+                    $transaction->rollback(mssql_get_last_message());    
+                }
                 $sqlserver->close();
             }
             $transaction->commit();    
