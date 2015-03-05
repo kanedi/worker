@@ -19,7 +19,7 @@ class SqlServer {
     
     public function connect(){
         $link1 = \mssql_pconnect($this->nameserver,$this->username,$this->password);
-        \mssql_select_db($this->db, $link1);
+        \mssql_select_db($this->db);
         $this->link = $link1;
         return $link1;
     }
