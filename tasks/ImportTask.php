@@ -37,11 +37,11 @@ class ImportTask extends \Phalcon\CLI\Task
                 $loop = $loop + 1;
             }
         }
-        try {
-            $transactionManager = new Phalcon\Mvc\Model\Transaction\Manager();
-            $transaction = $transactionManager->get();
-            for($i=1; $i<=$loop; $i++)
-            {
+        for($i=1; $i<=$loop; $i++)
+        {
+            try {
+                $transactionManager = new Phalcon\Mvc\Model\Transaction\Manager();
+                $transaction = $transactionManager->get();
                 $row=100;
                 $pagenumber=$i;               
                 $q ="
@@ -78,6 +78,7 @@ class ImportTask extends \Phalcon\CLI\Task
                        $donor->branch_origin = $branch;
                        $donor->branch_current = $branch;
                        $donor->is_deleted = 0;
+                       $donor->type = "PERSONAL";
                        $donor->country = 'INDONESIA';
                        $donor->public_id = $seq;
                        $donor->created = date("Y-m-d H:i:s",strtotime($row['tanggal_input']));
@@ -91,14 +92,14 @@ class ImportTask extends \Phalcon\CLI\Task
                        echo '.';
                    } 
                    $tt = $i * 100;
-                   echo "\n import From db: ".$db." record count ".$tt." Done"," \n ";                              
+                   echo "\n import From db: ".$db." record count ".$tt." Done"," \n ";
                 }   
-                $sqlserver->close();           
-            }                
-            $transaction->commit();
-        } catch (Phalcon\Mvc\Model\Transaction\Failed $e) {
-            echo $e->getMessage(), "\n";
-        }    
+                $sqlserver->close();    
+                $transaction->commit();    
+            } catch (Phalcon\Mvc\Model\Transaction\Failed $e) {
+                echo $e->getMessage(), "\n";
+            }       
+        }       
     }
     
     public function hitungAction($db){
