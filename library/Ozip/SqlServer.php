@@ -26,7 +26,7 @@ class SqlServer {
     
     
     public function query($sql){
-        $rt = \mssql_query($sql,$this->link);
+        $rt = \mssql_query($sql);
         return $rt;
     }
     
