@@ -109,7 +109,7 @@ class ImportTask extends \Phalcon\CLI\Task
                 echo $e->getMessage(), "\n";
             }    
         }
-        muter(1,$loop,$db,$branch);
+        muter(619,$loop,$db,$branch);
     }
     
     public function hitungAction($db){
